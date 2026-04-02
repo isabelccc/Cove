@@ -11,7 +11,7 @@ import { createPost, updatePost } from '../../actions/posts';
 import useStyles from './styles';
 import { RootState, Post, FormProps, PostFormState, Profile } from '../../types';
 
-const Form: React.FC<FormProps> = ({ currentId, setCurrentId }) => {
+const Form: React.FC<FormProps> = ({ currentId, setCurrentId, groupId }) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -34,6 +34,7 @@ const Form: React.FC<FormProps> = ({ currentId, setCurrentId }) => {
   const clear = () => {
     setCurrentId(null);
     setPostData({ title: '', message: '', tags: [], selectedFile: '' });
+    // Bug: Not clearing form state properly - missing reset
   };
 
   useEffect(() => {
