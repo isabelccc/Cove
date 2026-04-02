@@ -58,7 +58,8 @@ const Form: React.FC<FormProps> = ({ currentId, setCurrentId, groupId }) => {
     if (!name) return;
 
     if (!currentId) {
-      dispatch(createPost({ ...postData, name }, { push: history.push }));
+      if (!groupId) return;
+      dispatch(createPost({ ...postData, name, groupId }, { push: history.push }));
       clear();
     } else {
       dispatch(updatePost(currentId, { ...postData, name }));
@@ -71,6 +72,16 @@ const Form: React.FC<FormProps> = ({ currentId, setCurrentId, groupId }) => {
       <Paper className={classes.paper} elevation={6}>
         <Typography variant="h6" align="center">
           Please Sign In to create your own memories and like other&apos;s memories.
+        </Typography>
+      </Paper>
+    );
+  }
+
+  if (!currentId && !groupId) {
+    return (
+      <Paper className={classes.paper} elevation={6}>
+        <Typography variant="h6" align="center">
+          Open a circle to post photos for that group only.
         </Typography>
       </Paper>
     );
