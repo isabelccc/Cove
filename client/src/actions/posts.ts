@@ -17,10 +17,10 @@ export const getPost = (id: string) => async (dispatch: Dispatch<AnyAction>): Pr
   }
 };
 
-export const getPosts = (page: number) => async (dispatch: Dispatch<AnyAction>): Promise<void> => {
+export const getPosts = (page: number, groupId: string) => async (dispatch: Dispatch<AnyAction>): Promise<void> => {
   try {
     dispatch({ type: START_LOADING });
-    const { data: { data, currentPage, numberOfPages } } = await api.fetchPosts(page);
+    const { data: { data, currentPage, numberOfPages } } = await api.fetchPosts(page, groupId);
 
     dispatch({ type: FETCH_ALL, payload: { data, currentPage, numberOfPages } });
     dispatch({ type: END_LOADING });
@@ -30,10 +30,10 @@ export const getPosts = (page: number) => async (dispatch: Dispatch<AnyAction>):
   }
 };
 
-export const getPostsByCreator = (name: string) => async (dispatch: Dispatch<AnyAction>): Promise<void> => {
+export const getPostsByCreator = (userId: string) => async (dispatch: Dispatch<AnyAction>): Promise<void> => {
   try {
     dispatch({ type: START_LOADING });
-    const { data: { data } } = await api.fetchPostsByCreator(name);
+    const { data: { data } } = await api.fetchPostsByCreator(userId);
 
     dispatch({ type: FETCH_BY_CREATOR, payload: { data } });
     dispatch({ type: END_LOADING });
@@ -59,10 +59,11 @@ export const getPostsBySearch = (searchQuery: SearchQuery) => async (dispatch: D
 export const createPost = (
   post: Partial<Post>,
   history: HistoryLike,
+  groupId?: string | null,
 ) => async (dispatch: Dispatch<AnyAction>): Promise<void> => {
   try {
     dispatch({ type: START_LOADING });
-    const { data } = await api.createPost(post);
+    const { data } = await api.createPost({ ...post, groupId: post.groupId || groupId });
 
     dispatch({ type: CREATE, payload: data });
     dispatch({ type: END_LOADING });
