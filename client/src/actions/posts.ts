@@ -59,11 +59,10 @@ export const getPostsBySearch = (searchQuery: SearchQuery) => async (dispatch: D
 export const createPost = (
   post: Partial<Post>,
   history: HistoryLike,
-  groupId?: string | null,
 ) => async (dispatch: Dispatch<AnyAction>): Promise<void> => {
   try {
     dispatch({ type: START_LOADING });
-    const { data } = await api.createPost({ ...post, groupId: post.groupId || groupId });
+    const { data } = await api.createPost(post);
 
     dispatch({ type: CREATE, payload: data });
     dispatch({ type: END_LOADING });
