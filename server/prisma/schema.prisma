@@ -25,6 +25,20 @@ model User {
   posts Post[] @relation("UserPosts")
 }
 
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  ownerId     String
+  inviteToken String   @unique
+  memberIds   String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts Post[]
+
+  @@index([ownerId])
+}
+
 model Post {
   id           String    @id @default(cuid())
   title        String
@@ -34,14 +48,17 @@ model Post {
   tags         String[]
   selectedFile String?
   likes        String[]
+  groupId      String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   creatorUser User?     @relation("UserPosts", fields: [creator], references: [id], onDelete: SetNull)
+  group       Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   comments    Comment[]
 
   @@index([creator])
   @@index([name])
+  @@index([groupId])
 }
 
 model Comment {

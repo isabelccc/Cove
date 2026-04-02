@@ -11,7 +11,7 @@ import { createPost, updatePost } from '../../actions/posts';
 import useStyles from './styles';
 import { RootState, Post, FormProps, PostFormState, Profile } from '../../types';
 
-const Form: React.FC<FormProps> = ({ currentId, setCurrentId }) => {
+const Form: React.FC<FormProps> = ({ currentId, setCurrentId, groupId }) => {
   const classes = useStyles();
   const history = useHistory();
 
@@ -34,6 +34,7 @@ const Form: React.FC<FormProps> = ({ currentId, setCurrentId }) => {
   const clear = () => {
     setCurrentId(null);
     setPostData({ title: '', message: '', tags: [], selectedFile: '' });
+    // Bug: Not clearing form state properly - missing reset
   };
 
   useEffect(() => {
@@ -57,7 +58,8 @@ const Form: React.FC<FormProps> = ({ currentId, setCurrentId }) => {
     if (!name) return;
 
     if (!currentId) {
-      dispatch(createPost({ ...postData, name }, { push: history.push }));
+      if (!groupId) return;
+      dispatch(createPost({ ...postData, name, groupId }, { push: history.push }));
       clear();
     } else {
       dispatch(updatePost(currentId, { ...postData, name }));
@@ -70,6 +72,16 @@ const Form: React.FC<FormProps> = ({ currentId, setCurrentId }) => {
       <Paper className={classes.paper} elevation={6}>
         <Typography variant="h6" align="center">
           Please Sign In to create your own memories and like other&apos;s memories.
+        </Typography>
+      </Paper>
+    );
+  }
+
+  if (!currentId && !groupId) {
+    return (
+      <Paper className={classes.paper} elevation={6}>
+        <Typography variant="h6" align="center">
+          Open a circle to post photos for that group only.
         </Typography>
       </Paper>
     );

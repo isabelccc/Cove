@@ -1,5 +1,15 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { SearchQuery, Post, SigninFormData, SignupFormData, AuthData, PostsListResponse, Profile, PaginatedPostsResponse } from '../types';
+import {
+  SearchQuery,
+  Post,
+  SigninFormData,
+  SignupFormData,
+  AuthData,
+  PostsListResponse,
+  Profile,
+  PaginatedPostsResponse,
+  Group,
+} from '../types';
 
 const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001',
@@ -38,14 +48,16 @@ API.interceptors.response.use(
 export const fetchPost = (id: string): Promise<AxiosResponse<Post>> =>
   API.get(`/posts/${id}`);
 
-export const fetchPosts = (page: number): Promise<AxiosResponse<PaginatedPostsResponse>> =>
-  API.get(`/posts?page=${page}`);
+export const fetchPosts = (page: number, groupId: string): Promise<AxiosResponse<PaginatedPostsResponse>> =>
+  API.get(`/posts?page=${page}&groupId=${encodeURIComponent(groupId)}`);
 
-export const fetchPostsByCreator = (name: string): Promise<AxiosResponse<PostsListResponse>> =>
-  API.get(`/posts/creator?name=${name}`);
+export const fetchPostsByCreator = (userId: string): Promise<AxiosResponse<PostsListResponse>> =>
+  API.get(`/posts/creator?id=${encodeURIComponent(userId)}`);
 
 export const fetchPostsBySearch = (searchQuery: SearchQuery): Promise<AxiosResponse<PostsListResponse>> =>
-  API.get(`/posts/search?searchQuery=${searchQuery.search || 'none'}&tags=${searchQuery.tags}`);
+  API.get(
+    `/posts/search?searchQuery=${searchQuery.search || 'none'}&tags=${searchQuery.tags || ''}&groupId=${encodeURIComponent(searchQuery.groupId)}`,
+  );
 
 export const createPost = (newPost: Partial<Post>): Promise<AxiosResponse<Post>> =>
   API.post('/posts', newPost);
@@ -71,3 +83,11 @@ export const signUp = (formData: SignupFormData): Promise<AxiosResponse<AuthData
 
 export const googleSignIn = (tokenId: string): Promise<AxiosResponse<AuthData>> =>
   API.post('/user/google', { tokenId });
+
+export const fetchMyGroups = (): Promise<AxiosResponse<{ data: Group[] }>> => API.get('/groups/mine');
+
+export const createGroup = (name: string): Promise<AxiosResponse<Group>> =>
+  API.post('/groups', { name });
+
+export const joinGroupByToken = (inviteToken: string): Promise<AxiosResponse<Group>> =>
+  API.post('/groups/join', { inviteToken });

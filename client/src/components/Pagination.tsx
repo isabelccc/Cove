@@ -10,17 +10,18 @@ import { getPosts } from '../actions/posts';
 import useStyles from './styles';
 import { RootState, PaginationProps } from '../types';
 
-const Paginate: React.FC<PaginationProps> = ({ page }) => {
+const Paginate: React.FC<PaginationProps> = ({ page, groupId }) => {
   const { numberOfPages } = useSelector((state: RootState) => state.posts);
   const dispatch = useDispatch<ThunkDispatch<any, any, AnyAction>>();
 
   const classes = useStyles();
+  const base = `/circles/${groupId}`;
 
   useEffect(() => {
-    if (page) {
-      dispatch(getPosts(page));
+    if (page && groupId) {
+      dispatch(getPosts(page, groupId));
     }
-  }, [dispatch, page]);
+  }, [dispatch, page, groupId]);
 
   return (
     <Pagination
@@ -30,7 +31,7 @@ const Paginate: React.FC<PaginationProps> = ({ page }) => {
       variant="outlined"
       color="primary"
       renderItem={(item) => (
-        <PaginationItem {...item} component={Link} to={`/posts?page=${item.page}`} />
+        <PaginationItem {...item} component={Link} to={`${base}?page=${item.page}`} />
       )}
     />
   );
