@@ -40,6 +40,16 @@ export interface Post {
   selectedFile: string;
   likes: string[];
   comments: Comment[];
+  groupId?: string | null;
+  createdAt: Date | string;
+}
+
+export interface Group {
+  _id: string;
+  name: string;
+  ownerId: string;
+  inviteToken: string;
+  memberIds: string[];
   createdAt: Date | string;
 }
 
@@ -69,6 +79,7 @@ export interface RootState {
 export interface SearchQuery {
   search?: string;
   tags?: string;
+  groupId: string;
 }
 
 // Auth types
@@ -159,6 +170,7 @@ export interface Profile {
 export type FormProps = {
   currentId: string | null;
   setCurrentId: (id: string | null) => void;
+  groupId: string | null;
 };
 
 // Component Props
@@ -173,6 +185,7 @@ export interface PostsProps {
 
 export interface PaginationProps {
   page: number;
+  groupId: string;
 }
 
 // Form types

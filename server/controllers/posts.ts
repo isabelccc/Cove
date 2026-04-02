@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import Filter from 'bad-words';
 import prisma from '../prisma/client.js';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest } from '../middleware/auth.js';
+import { groupIdsForUser, isGroupMember } from '../utils/groupAccess.js';
 
 // Profanity filter initialization
 const filter = new Filter();
@@ -13,6 +14,7 @@ interface PostBody {
   tags: string[];
   selectedFile: string;
   name?: string;
+  groupId?: string;
 }
 
 interface CommentBody {
@@ -45,19 +47,44 @@ const transformPost = (post: any) => {
         createdAt: reply.createdAt,
       })) || [],
     })) || [],
+    groupId: post.groupId ?? null,
     createdAt: post.createdAt,
   };
 };
 
-export const getPosts = async (req: Request, res: Response): Promise<void> => {
-  const { page } = req.query;
+async function assertCanReadPost(
+  userId: string | undefined,
+  post: { groupId: string | null; creator: string },
+): Promise<boolean> {
+  if (!userId) return false;
+  if (post.groupId) return isGroupMember(userId, post.groupId);
+  return post.creator === userId;
+}
+
+export const getPosts = async (req: AuthRequest, res: Response): Promise<void> => {
+  const { page, groupId } = req.query;
+
+  if (!req.userId) {
+    res.status(401).json({ message: 'Unauthenticated' });
+    return;
+  }
+  if (!groupId || typeof groupId !== 'string') {
+    res.status(400).json({ message: 'groupId is required' });
+    return;
+  }
+  if (!(await isGroupMember(req.userId, groupId))) {
+    res.status(403).json({ message: 'Not a member of this circle' });
+    return;
+  }
+
   try {
     const LIMIT = 8;
     const startIndex = (Number(page) - 1) * LIMIT;
-    
+
     const [total, posts] = await Promise.all([
-      prisma.post.count(),
+      prisma.post.count({ where: { groupId } }),
       prisma.post.findMany({
+        where: { groupId },
         take: LIMIT,
         skip: startIndex,
         orderBy: { createdAt: 'desc' },
@@ -84,34 +111,54 @@ export const getPosts = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getPostsBySearch = async (req: Request, res: Response): Promise<void> => {
-  const { searchQuery, tags } = req.query;
+export const getPostsBySearch = async (req: AuthRequest, res: Response): Promise<void> => {
+  const { searchQuery, tags, groupId } = req.query;
+
+  if (!req.userId) {
+    res.status(401).json({ message: 'Unauthenticated' });
+    return;
+  }
+  if (!groupId || typeof groupId !== 'string') {
+    res.status(400).json({ message: 'groupId is required for search' });
+    return;
+  }
+  if (!(await isGroupMember(req.userId, groupId))) {
+    res.status(403).json({ message: 'Not a member of this circle' });
+    return;
+  }
+
   try {
-    const searchTerm = searchQuery as string;
+    const rawSearch = typeof searchQuery === 'string' ? searchQuery : '';
+    const searchTerm = rawSearch && rawSearch !== 'none' ? rawSearch : '';
     const tagArray = tags ? (tags as string).split(',').filter(Boolean) : [];
 
+    const orConditions: object[] = [];
+    if (searchTerm) {
+      orConditions.push({
+        title: { contains: searchTerm, mode: 'insensitive' as const },
+      });
+      orConditions.push({
+        message: { contains: searchTerm, mode: 'insensitive' as const },
+      });
+    }
+    if (tagArray.length > 0) {
+      orConditions.push({ tags: { hasSome: tagArray } });
+    }
+
+    const where: {
+      groupId: string;
+      OR?: object[];
+    } = { groupId };
+
+    if (orConditions.length > 0) {
+      where.OR = orConditions;
+    } else {
+      res.json({ data: [] });
+      return;
+    }
+
     const posts = await prisma.post.findMany({
-      where: {
-        OR: [
-          searchTerm ? {
-            title: {
-              contains: searchTerm,
-              mode: 'insensitive' as const,
-            },
-          } : {},
-          searchTerm ? {
-            message: {
-              contains: searchTerm,
-              mode: 'insensitive' as const,
-            },
-          } : {},
-          tagArray.length > 0 ? {
-            tags: {
-              hasSome: tagArray,
-            },
-          } : {},
-        ].filter((condition) => Object.keys(condition).length > 0),
-      },
+      where,
       include: {
         comments: {
           include: {
@@ -131,12 +178,29 @@ export const getPostsBySearch = async (req: Request, res: Response): Promise<voi
   }
 };
 
-export const getPostsByCreator = async (req: Request, res: Response): Promise<void> => {
-  const { name } = req.query;
+export const getPostsByCreator = async (req: AuthRequest, res: Response): Promise<void> => {
+  const creatorId = req.query.id as string;
+
+  if (!req.userId) {
+    res.status(401).json({ message: 'Unauthenticated' });
+    return;
+  }
+  if (!creatorId) {
+    res.status(400).json({ message: 'Creator id (query id) is required' });
+    return;
+  }
+
   try {
+    const myGroupIds = await groupIdsForUser(req.userId);
+    if (myGroupIds.length === 0) {
+      res.json({ data: [] });
+      return;
+    }
+
     const posts = await prisma.post.findMany({
       where: {
-        name: name as string,
+        creator: creatorId,
+        groupId: { in: myGroupIds },
       },
       include: {
         comments: {
@@ -157,7 +221,7 @@ export const getPostsByCreator = async (req: Request, res: Response): Promise<vo
   }
 };
 
-export const getPost = async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+export const getPost = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   try {
     const post = await prisma.post.findUnique({
@@ -179,6 +243,11 @@ export const getPost = async (req: Request<{ id: string }>, res: Response): Prom
       return;
     }
 
+    if (!(await assertCanReadPost(req.userId, post))) {
+      res.status(403).json({ message: 'Not allowed to view this post' });
+      return;
+    }
+
     const transformedPost = transformPost(post);
     res.status(200).json(transformedPost);
   } catch (error: unknown) {
@@ -189,16 +258,25 @@ export const getPost = async (req: Request<{ id: string }>, res: Response): Prom
 
 export const createPost = async (req: AuthRequest, res: Response): Promise<void> => {
   const postData = (req as Request).body as PostBody;
-  const { title, message, tags, selectedFile, name } = postData;
-  
+  const { title, message, tags, selectedFile, name, groupId } = postData;
+
   if (!req.userId) {
     res.status(401).json({ message: 'Unauthenticated' });
     return;
   }
+  if (!groupId) {
+    res.status(400).json({ message: 'groupId is required' });
+    return;
+  }
+  if (!(await isGroupMember(req.userId, groupId))) {
+    res.status(403).json({ message: 'Not a member of this circle' });
+    return;
+  }
 
   try {
-    const cleanedTitle = filter.clean(title);
-    const cleanedMessage = filter.clean(message);
+    // Bug: Missing validation - title and message could be undefined
+    const cleanedTitle = filter.clean(title || '');
+    const cleanedMessage = filter.clean(message || '');
 
     const newPost = await prisma.post.create({
       data: {
@@ -209,6 +287,7 @@ export const createPost = async (req: AuthRequest, res: Response): Promise<void>
         name: name || 'Unknown',
         creator: req.userId,
         likes: [],
+        groupId,
       },
       include: {
         comments: {
@@ -244,6 +323,11 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
     }
 
     // Check if user is the creator
+    if (existingPost.groupId && !(await isGroupMember(req.userId!, existingPost.groupId))) {
+      res.status(403).json({ message: 'Not allowed to update this post' });
+      return;
+    }
+
     if (existingPost.creator !== req.userId) {
       res.status(403).json({ message: 'Not allowed to update this post' });
       return;
@@ -252,10 +336,10 @@ export const updatePost = async (req: AuthRequest, res: Response): Promise<void>
     const updatedPost = await prisma.post.update({
       where: { id },
       data: {
-        title: title ? filter.clean(title) : undefined,
-        message: message ? filter.clean(message) : undefined,
-        tags: tags || undefined,
-        selectedFile: selectedFile || undefined,
+        title: title ? filter.clean(title) : existingPost.title,
+        message: message ? filter.clean(message) : existingPost.message,
+        tags: tags || existingPost.tags,
+        selectedFile: selectedFile || existingPost.selectedFile,
       },
       include: {
         comments: {
@@ -285,6 +369,11 @@ export const deletePost = async (req: AuthRequest, res: Response): Promise<void>
 
     if (!post) {
       res.status(404).json({ message: `No post with id: ${id}` });
+      return;
+    }
+
+    if (post.groupId && !(await isGroupMember(req.userId!, post.groupId))) {
+      res.status(403).json({ message: 'Not allowed to delete this post' });
       return;
     }
 
@@ -320,6 +409,11 @@ export const likePost = async (req: AuthRequest, res: Response): Promise<void> =
 
     if (!post) {
       res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    if (post.groupId && !(await isGroupMember(req.userId, post.groupId))) {
+      res.status(403).json({ message: 'Not allowed' });
       return;
     }
 
@@ -375,13 +469,18 @@ export const commentPost = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
+    if (post.groupId && !(await isGroupMember(req.userId, post.groupId))) {
+      res.status(403).json({ message: 'Not allowed' });
+      return;
+    }
+
     const userName = req.userName || req.user?.name || commentData.authorName || 'Unknown';
 
-    // Create comment
+    // Create comment (missing validation for empty text)
     await prisma.comment.create({
       data: {
-        text: filter.clean(text),
-        authorId: req.userId,
+        text: filter.clean(text || ''),
+        authorId: req.userId!,
         authorName: userName,
         postId: id,
       },
@@ -431,6 +530,11 @@ export const editComment = async (req: AuthRequest, res: Response): Promise<void
 
     if (!post) {
       res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    if (post.groupId && !(await isGroupMember(req.userId, post.groupId))) {
+      res.status(403).json({ message: 'Not allowed' });
       return;
     }
 
@@ -499,6 +603,11 @@ export const deleteComment = async (req: AuthRequest, res: Response): Promise<vo
 
     if (!post) {
       res.status(404).json({ message: 'Post not found' });
+      return;
+    }
+
+    if (post.groupId && !(await isGroupMember(req.userId, post.groupId))) {
+      res.status(403).json({ message: 'Not allowed' });
       return;
     }
 

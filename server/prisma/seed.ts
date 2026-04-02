@@ -9,6 +9,7 @@ async function main() {
   await prisma.reply.deleteMany();
   await prisma.comment.deleteMany();
   await prisma.post.deleteMany();
+  await prisma.group.deleteMany();
   await prisma.user.deleteMany();
 
   // 1. Create Users
@@ -42,7 +43,18 @@ async function main() {
 
   console.log(`✅ Created ${3} users`);
 
-  // 2. Create Posts
+  // 2. Demo circle (all seed users are members)
+  console.log('👥 Creating demo circle...');
+  const demoGroup = await prisma.group.create({
+    data: {
+      name: 'Demo Circle',
+      ownerId: user1.id,
+      inviteToken: 'seed-demo-invite-token',
+      memberIds: [user1.id, user2.id, user3.id],
+    },
+  });
+
+  // 3. Create Posts
   console.log('📝 Creating posts...');
   const post1 = await prisma.post.create({
     data: {
@@ -53,6 +65,7 @@ async function main() {
       tags: ['sunset', 'beach', 'nature', 'photography'],
       selectedFile: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
       likes: [user2.id, user3.id],
+      groupId: demoGroup.id,
     },
   });
 
@@ -65,6 +78,7 @@ async function main() {
       tags: ['coding', 'programming', 'webdev', 'react'],
       selectedFile: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800',
       likes: [user1.id],
+      groupId: demoGroup.id,
     },
   });
 
@@ -77,10 +91,11 @@ async function main() {
       tags: ['food', 'cooking', 'pizza', 'recipe'],
       selectedFile: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800',
       likes: [user1.id, user2.id],
+      groupId: demoGroup.id,
     },
   });
 
-  const post4 = await prisma.post.create({
+  await prisma.post.create({
     data: {
       title: 'Mountain Hiking Adventure',
       message: 'Conquered the mountain today! The view from the top was worth every step. Already planning the next adventure.',
@@ -89,12 +104,13 @@ async function main() {
       tags: ['hiking', 'adventure', 'mountains', 'outdoors'],
       selectedFile: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
       likes: [],
+      groupId: demoGroup.id,
     },
   });
 
-  console.log(`✅ Created ${4} posts`);
+  console.log(`✅ Created ${4} posts in circle "${demoGroup.name}"`);
 
-  // 3. Create Comments
+  // 4. Create Comments
   console.log('💬 Creating comments...');
   const comment1 = await prisma.comment.create({
     data: {
@@ -105,7 +121,7 @@ async function main() {
     },
   });
 
-  const comment2 = await prisma.comment.create({
+  await prisma.comment.create({
     data: {
       text: 'Congratulations on your first project! That\'s a huge milestone! 🎉',
       authorId: user1.id,
@@ -114,7 +130,7 @@ async function main() {
     },
   });
 
-  const comment3 = await prisma.comment.create({
+  await prisma.comment.create({
     data: {
       text: 'That pizza looks amazing! Can you share the recipe?',
       authorId: user1.id,
@@ -134,7 +150,7 @@ async function main() {
 
   console.log(`✅ Created ${4} comments`);
 
-  // 4. Create Replies
+  // 5. Create Replies
   console.log('↩️ Creating replies...');
   await prisma.reply.create({
     data: {
@@ -159,6 +175,7 @@ async function main() {
   console.log('\n🎉 Seed completed successfully!');
   console.log('\n📊 Summary:');
   console.log(`   - Users: ${3}`);
+  console.log(`   - Circles: ${1}`);
   console.log(`   - Posts: ${4}`);
   console.log(`   - Comments: ${4}`);
   console.log(`   - Replies: ${2}`);

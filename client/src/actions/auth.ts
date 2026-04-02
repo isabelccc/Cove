@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 import { AUTH } from '../constants/actionTypes';
 import * as api from '../api/index';
 import { SigninFormData, SignupFormData, Router } from '../types';
+import { postAuthRedirect } from '../utils/postAuthRedirect';
 
 export const signin = (
   formData: SigninFormData,
@@ -14,7 +15,7 @@ export const signin = (
 
     dispatch({ type: AUTH, data });
 
-    router.push('/');
+    postAuthRedirect(router.push);
   } catch (error: unknown) {
     const err = error as AxiosError<{ message?: string }>;
     const errorMessage = err?.response?.data?.message || 'Sign in failed. Please try again.';
@@ -33,7 +34,7 @@ export const signup = (
 
     dispatch({ type: AUTH, data });
 
-    router.push('/');
+    postAuthRedirect(router.push);
   } catch (error: unknown) {
     const err = error as AxiosError<{ message?: string }>;
     console.error('Sign up error details:', {

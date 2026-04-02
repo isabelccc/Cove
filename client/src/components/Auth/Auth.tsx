@@ -16,6 +16,7 @@ import Icon from './icon';
 import { signin, signup } from '../../actions/auth';
 import * as api from '../../api';
 import { AUTH } from '../../constants/actionTypes';
+import { postAuthRedirect } from '../../utils/postAuthRedirect';
 import useStyles from './styles';
 import Input from './Input';
 import { AuthFormState, GoogleLoginResponse, GoogleLoginResponseOffline } from '../../types';
@@ -139,7 +140,7 @@ const Auth: React.FC = () => {
         data,
       });
 
-      history.push('/');
+      postAuthRedirect(history.push);
     } catch (err: unknown) {
       console.error('Google sign in error:', err);
       const errObj = err as { response?: { data?: { message?: string } }; message?: string };
