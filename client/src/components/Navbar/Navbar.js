@@ -47,6 +47,9 @@ const Navbar = () => {
       <Toolbar className={classes.toolbar}>
         {user?.result ? (
           <Box display="flex" alignItems="center">
+            <Button component={Link} to="/circles" color="primary" variant="outlined" style={{ marginRight: 12 }}>
+              Circles
+            </Button>
             <Link to={`/profile/${user.result._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
               <img
                 src={getGravatarUrl(user.result.email, 40)}

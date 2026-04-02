@@ -11,11 +11,22 @@ dotenv.config();
 import postRoutes from './routes/posts.js';
 import userRouter from './routes/user.js';
 import groupRoutes from './routes/groups.js';
+import healthRouter from './routes/health.js';
 
 const app = express();
 
 // Get Redis client for rate limiting
 const redisClient = getRedisClient();
+
+if (redisClient) {
+  console.log('✅ Rate limiting: Redis (shared across instances, sliding window)');
+} else if (process.env.NODE_ENV === 'production') {
+  console.warn(
+    '⚠️  REDIS_URL not set: rate limits use in-memory storage (not shared across servers / replicas). Set REDIS_URL in production.',
+  );
+} else {
+  console.log('Rate limiting: in-memory (local dev). Set REDIS_URL to use Redis.');
+}
 
 // Helper function to create rate limiter with Redis store (sliding window)
 const createRateLimiter = (max: number, windowMs: number, message?: string) => {
@@ -27,19 +38,14 @@ const createRateLimiter = (max: number, windowMs: number, message?: string) => {
     message: message || `Too many requests from this IP, please try again after ${Math.round(windowMs / 60000)} minutes.`,
   };
 
-  // Use Redis store if available (enables sliding window and shared state across servers)
   if (redisClient) {
-    // rate-limit-redis v4 API: uses sendCommand wrapper
     config.store = new RedisStore({
       sendCommand: async (...args: (string | number)[]): Promise<any> => {
         const [command, ...commandArgs] = args;
         return redisClient!.call(command as string, ...commandArgs);
       },
-      prefix: 'rl:', // Key prefix for rate limit keys in Redis
+      prefix: 'rl:',
     });
-    console.log(`✅ Rate limiter configured with Redis (sliding window): ${max} requests per ${Math.round(windowMs / 60000)} minutes`);
-  } else {
-    console.log(`⚠️  Rate limiter using in-memory store (fixed window): ${max} requests per ${Math.round(windowMs / 60000)} minutes`);
   }
 
   return rateLimit(config);
@@ -70,6 +76,16 @@ app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ limit: '30mb', extended: true }));
 app.use(cors());
 app.use(metricsMiddleware);
+
+app.get('/', (_req, res) => {
+  res.json({
+    service: 'mern-memories-api',
+    health: '/health',
+    hint: 'JSON API only — open the React app (e.g. http://localhost:3000) for the web UI.',
+  });
+});
+
+app.use('/health', healthRouter);
 
 // Apply rate limiting to authentication routes
 app.post('/user/signin', authLimiter);

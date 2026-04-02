@@ -1,0 +1,277 @@
+import { makeStyles, alpha } from '@material-ui/core/styles';
+
+const useCirclesPageStyles = makeStyles((theme) => ({
+  page: {
+    minHeight: 'calc(100vh - 100px)',
+    paddingBottom: theme.spacing(6),
+    marginLeft: theme.spacing(-1),
+    marginRight: theme.spacing(-1),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    [theme.breakpoints.up('md')]: {
+      marginLeft: theme.spacing(-2),
+      marginRight: theme.spacing(-2),
+      paddingLeft: theme.spacing(3),
+      paddingRight: theme.spacing(3),
+    },
+    background: `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, #f9f9f7 35%, #f7f8fc 100%)`,
+    borderRadius: theme.spacing(0, 0, 2, 2),
+  },
+  hero: {
+    marginBottom: theme.spacing(4),
+    paddingTop: theme.spacing(1),
+  },
+  heroTitle: {
+    fontWeight: 800,
+    letterSpacing: '-0.02em',
+    color: '#1a1d2e',
+    marginBottom: theme.spacing(1),
+  },
+  heroSubtitle: {
+    maxWidth: 520,
+    lineHeight: 1.6,
+    color: theme.palette.text.secondary,
+    marginBottom: theme.spacing(2),
+  },
+  chipRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(1),
+  },
+  createCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: theme.spacing(4),
+    boxShadow: `0 4px 24px ${alpha(theme.palette.primary.main, 0.14)}`,
+    border: `1px solid ${theme.palette.divider}`,
+  },
+  createCardBar: {
+    height: 4,
+    background: `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, `
+      + `${theme.palette.primary.main} 45%, ${theme.palette.primary.light} 100%)`,
+  },
+  createBody: {
+    padding: theme.spacing(3),
+  },
+  createTitle: {
+    fontWeight: 700,
+    marginBottom: theme.spacing(2),
+  },
+  circleCard: {
+    borderRadius: 16,
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    border: `1px solid ${theme.palette.divider}`,
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.2)}`,
+    },
+  },
+  circleCardMedia: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(2, 2, 1),
+    gap: theme.spacing(2),
+  },
+  circleAvatar: {
+    width: 56,
+    height: 56,
+    fontSize: '1.35rem',
+    fontWeight: 700,
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+    color: theme.palette.primary.contrastText,
+  },
+  circleCardActions: {
+    padding: theme.spacing(1, 2, 2),
+    justifyContent: 'space-between',
+    borderTop: `1px solid ${theme.palette.divider}`,
+    marginTop: 'auto',
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: theme.spacing(6, 3),
+    borderRadius: 16,
+    border: `1px dashed ${theme.palette.divider}`,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+  },
+  wallHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2.5, 3),
+    marginBottom: theme.spacing(3),
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+    border: `1px solid ${theme.palette.divider}`,
+  },
+  wallTitle: {
+    fontWeight: 800,
+    letterSpacing: '-0.02em',
+  },
+  wallMeta: {
+    marginTop: theme.spacing(0.5),
+    color: theme.palette.text.secondary,
+    fontSize: '0.875rem',
+  },
+  searchPanel: {
+    borderRadius: 16,
+    padding: theme.spacing(2.5),
+    backgroundColor: '#fff',
+    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+    border: `1px solid ${theme.palette.divider}`,
+    marginBottom: theme.spacing(2),
+  },
+  searchPanelLabel: {
+    fontWeight: 600,
+    marginBottom: theme.spacing(2),
+    color: theme.palette.text.primary,
+  },
+  insightsRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: theme.spacing(2),
+    marginBottom: theme.spacing(3),
+  },
+  insightCard: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2),
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    border: `1px solid ${theme.palette.divider}`,
+    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+  },
+  insightIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: alpha(theme.palette.primary.main, 0.55),
+    flexShrink: 0,
+  },
+  insightValue: {
+    fontWeight: 800,
+    fontSize: '1.25rem',
+    letterSpacing: '-0.02em',
+    lineHeight: 1.2,
+  },
+  insightLabel: {
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    fontWeight: 600,
+  },
+  leftRail: {
+    borderRadius: 16,
+    padding: theme.spacing(2),
+    backgroundColor: '#fff',
+    border: `1px solid ${theme.palette.divider}`,
+    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+    marginBottom: theme.spacing(2),
+  },
+  railNav: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    marginBottom: theme.spacing(2),
+  },
+  railNavItem: {
+    display: 'block',
+    padding: theme.spacing(1, 1.5),
+    borderRadius: 999,
+    textDecoration: 'none',
+    color: '#1a1d2e',
+    fontWeight: 600,
+    fontSize: '0.9rem',
+    transition: 'background-color 0.15s',
+    '&:hover': {
+      backgroundColor: 'rgba(0,0,0,0.04)',
+    },
+  },
+  railNavItemActive: {
+    backgroundColor: alpha(theme.palette.primary.main, 0.45),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.55),
+    },
+  },
+  membersPanel: {
+    borderRadius: 16,
+    padding: theme.spacing(2.5),
+    backgroundColor: '#fff',
+    border: `1px solid ${theme.palette.divider}`,
+    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+    position: 'sticky',
+    top: 88,
+    maxHeight: 'calc(100vh - 120px)',
+    overflow: 'auto',
+  },
+  membersPanelTitle: {
+    fontWeight: 800,
+    letterSpacing: '-0.02em',
+    marginBottom: theme.spacing(0.5),
+  },
+  membersPanelHint: {
+    color: theme.palette.text.secondary,
+    fontSize: '0.8125rem',
+    lineHeight: 1.5,
+    marginBottom: theme.spacing(2),
+  },
+  membersList: {
+    maxWidth: '100%',
+  },
+  memberRow: {
+    borderRadius: 12,
+    marginBottom: theme.spacing(0.5),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.primary.main, 0.15),
+    },
+  },
+  memberAvatar: {
+    width: 44,
+    height: 44,
+    fontSize: '0.95rem',
+    fontWeight: 700,
+    backgroundColor: theme.palette.primary.dark,
+    color: theme.palette.primary.contrastText,
+  },
+  memberName: {
+    fontWeight: 700,
+    fontSize: '0.9375rem',
+  },
+  memberRole: {
+    fontSize: '0.75rem',
+    color: theme.palette.text.secondary,
+  },
+  colFeed: {
+    order: 1,
+    [theme.breakpoints.up('md')]: {
+      order: 2,
+    },
+  },
+  colLeft: {
+    order: 2,
+    [theme.breakpoints.up('md')]: {
+      order: 1,
+    },
+  },
+  colRight: {
+    order: 3,
+  },
+  fabNewPost: {
+    position: 'fixed',
+    right: theme.spacing(3),
+    bottom: theme.spacing(3),
+    zIndex: theme.zIndex.speedDial,
+    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.45)}`,
+  },
+}));
+
+export default useCirclesPageStyles;

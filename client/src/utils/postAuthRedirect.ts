@@ -1,5 +1,5 @@
 /** After sign-in, resume invite flow or go to circles home. */
-export function postAuthRedirect(push: (path: string) => void): void {
+export default function postAuthRedirect(push: (path: string) => void): void {
   const pending = sessionStorage.getItem('pendingInviteToken');
   sessionStorage.removeItem('pendingInviteToken');
   if (pending) {

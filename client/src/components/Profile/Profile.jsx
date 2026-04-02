@@ -13,8 +13,8 @@ const Profile = () => {
     // Get user info from localStorage or global state
     const profile = JSON.parse(localStorage.getItem('profile'));
     setUser(profile?.result);
-    if (profile?.result?.name) {
-      dispatch(getPostsByCreator(profile.result.name));
+    if (profile?.result?._id) {
+      dispatch(getPostsByCreator(profile.result._id));
     }
   }, [dispatch]);
 

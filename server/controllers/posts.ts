@@ -79,7 +79,8 @@ export const getPosts = async (req: AuthRequest, res: Response): Promise<void> =
 
   try {
     const LIMIT = 8;
-    const startIndex = (Number(page) - 1) * LIMIT;
+    const pageNum = Number.isFinite(Number(page)) && Number(page) > 0 ? Number(page) : 1;
+    const startIndex = (pageNum - 1) * LIMIT;
 
     const [total, posts] = await Promise.all([
       prisma.post.count({ where: { groupId } }),
@@ -102,8 +103,8 @@ export const getPosts = async (req: AuthRequest, res: Response): Promise<void> =
     const transformedPosts = posts.map(transformPost);
     res.json({
       data: transformedPosts,
-      currentPage: Number(page) || 1,
-      numberOfPages: Math.ceil(total / LIMIT),
+      currentPage: pageNum,
+      numberOfPages: Math.max(1, Math.ceil(total / LIMIT)),
     });
   } catch (error: unknown) {
     const err = error as Error;
