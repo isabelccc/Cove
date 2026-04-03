@@ -20,10 +20,6 @@ export default makeStyles((theme) => ({
     fontSize: '2em',
     fontWeight: 300,
   },
-  image: {
-    marginLeft: '10px',
-    marginTop: '5px',
-  },
   toolbar: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -54,6 +50,17 @@ export default makeStyles((theme) => ({
   brandContainer: {
     display: 'flex',
     alignItems: 'center',
+  },
+  brandLogo: {
+    height: 72,
+    width: 'auto',
+    minWidth: 140,
+    maxWidth: 'min(340px, 60vw)',
+    display: 'block',
+    [theme.breakpoints.down('sm')]: {
+      height: 58,
+      maxWidth: 'min(280px, 78vw)',
+    },
   },
   purple: {
     color: theme.palette.getContrastText(deepPurple[500]),

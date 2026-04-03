@@ -20,6 +20,24 @@ services:
       - app-network
     restart: unless-stopped
 
+  # Redis for rate limiting (sliding window)
+  redis:
+    image: redis:7-alpine
+    container_name: mern-memories-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
   # Backend API
   api:
     build:
@@ -30,6 +48,7 @@ services:
       NODE_ENV: production
       PORT: 5001
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-memories}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
@@ -39,6 +58,8 @@ services:
       - "5001:5001"
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - app-network
@@ -75,6 +96,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

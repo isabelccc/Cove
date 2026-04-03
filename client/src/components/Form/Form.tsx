@@ -90,7 +90,7 @@ const Form: React.FC<FormProps> = ({
           Sign in to post
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          Memories in your circles are private. Sign in to share a photo with people you trust.
+          Posts in your circles are private. Sign in to share a photo with people you trust.
         </Typography>
       </Paper>
     );

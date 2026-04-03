@@ -79,7 +79,7 @@ app.use(metricsMiddleware);
 
 app.get('/', (_req, res) => {
   res.json({
-    service: 'mern-memories-api',
+    service: 'cove-api',
     health: '/health',
     hint: 'JSON API only — open the React app (e.g. http://localhost:3000) for the web UI.',
   });

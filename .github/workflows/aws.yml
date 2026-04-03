@@ -31,13 +31,16 @@ on:
     branches: [ "main" ]
 
 env:
-  AWS_REGION: MY_AWS_REGION                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: MY_ECR_REPOSITORY           # set this to your Amazon ECR repository name
+  AWS_REGION: us-east-1                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY_API: MY_ECR_REPOSITORY_API   # set this to your Amazon ECR repository name for API (e.g. mern-memories-api)
+  ECR_REPOSITORY_CLIENT: MY_ECR_REPOSITORY_CLIENT # set this to your Amazon ECR repository name for client (e.g. mern-memories-client)
   ECS_SERVICE: MY_ECS_SERVICE                 # set this to your Amazon ECS service name
   ECS_CLUSTER: MY_ECS_CLUSTER                 # set this to your Amazon ECS cluster name
   ECS_TASK_DEFINITION: MY_ECS_TASK_DEFINITION # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: MY_CONTAINER_NAME           # set this to the name of the container in the
+  CONTAINER_NAME_API: mern-memories-api       # set this to the name of the API container in the
+                                               # containerDefinitions section of your task definition
+  CONTAINER_NAME_CLIENT: mern-memories-client  # set this to the name of the client container in the
                                                # containerDefinitions section of your task definition
 
 permissions:
@@ -64,31 +67,53 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
+    - name: Build, tag, and push API image to Amazon ECR
+      id: build-api-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        # Build API docker container and push it to ECR
+        docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY_API }}:$IMAGE_TAG -f ./server/Dockerfile ./server
+        docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY_API }}:$IMAGE_TAG
+        echo "api-image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY_API }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-    - name: Fill in the new image ID in the Amazon ECS task definition
+    - name: Build, tag, and push Client image to Amazon ECR
+      id: build-client-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+        REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}
+      run: |
+        # Build Client docker container and push it to ECR
+        docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY_CLIENT }}:$IMAGE_TAG \
+          --build-arg REACT_APP_API_URL=$REACT_APP_API_URL \
+          --build-arg REACT_APP_GOOGLE_CLIENT_ID=$REACT_APP_GOOGLE_CLIENT_ID \
+          -f ./client/Dockerfile ./client
+        docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY_CLIENT }}:$IMAGE_TAG
+        echo "client-image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY_CLIENT }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Fill in the new image IDs in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: ${{ env.ECS_TASK_DEFINITION }}
-        container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
+        container-name: ${{ env.CONTAINER_NAME_API }}
+        image: ${{ steps.build-api-image.outputs.api-image }}
+
+    - name: Update Client container image in task definition
+      id: task-def-client
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        container-name: ${{ env.CONTAINER_NAME_CLIENT }}
+        image: ${{ steps.build-client-image.outputs.client-image }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        task-definition: ${{ steps.task-def-client.outputs.task-definition }}
         service: ${{ env.ECS_SERVICE }}
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
