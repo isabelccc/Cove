@@ -91,3 +91,5 @@ export const createGroup = (name: string): Promise<AxiosResponse<Group>> =>
 
 export const joinGroupByToken = (inviteToken: string): Promise<AxiosResponse<Group>> =>
   API.post('/groups/join', { inviteToken });
+
+export const fetchGroup = (id: string): Promise<AxiosResponse<Group>> => API.get(`/groups/${id}`);

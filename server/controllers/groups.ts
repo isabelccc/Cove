@@ -89,12 +89,30 @@ export const getGroup = async (req: AuthRequest, res: Response): Promise<void> =
       return;
     }
 
+    const users = await prisma.user.findMany({
+      where: { id: { in: group.memberIds } },
+      select: { id: true, name: true },
+    });
+    const byId = new Map(users.map((u) => [u.id, u]));
+    const members = group.memberIds
+      .map((userId) => {
+        const u = byId.get(userId);
+        if (!u) return null;
+        return {
+          id: u.id,
+          name: u.name,
+          role: userId === group.ownerId ? ('Owner' as const) : ('Member' as const),
+        };
+      })
+      .filter((m): m is NonNullable<typeof m> => m !== null);
+
     res.json({
       _id: group.id,
       name: group.name,
       ownerId: group.ownerId,
       inviteToken: group.inviteToken,
       memberIds: group.memberIds,
+      members,
       createdAt: group.createdAt,
     });
   } catch (e: unknown) {

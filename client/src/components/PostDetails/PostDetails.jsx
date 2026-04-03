@@ -5,6 +5,7 @@ import moment from 'moment';
 import { useParams, useHistory, Link } from 'react-router-dom';
 
 import { getPost, getPostsBySearch } from '../../actions/posts';
+import { BRAND_DARK } from '../../theme';
 import CommentSection from './CommentSection';
 import useStyles from './styles';
 
@@ -20,14 +21,16 @@ const Post = () => {
   }, [id, dispatch]);
 
   useEffect(() => {
-    if (post) {
-      dispatch(getPostsBySearch({ search: 'none', tags: post?.tags.join(',') }));
+    if (post?.groupId && post.tags?.length) {
+      dispatch(
+        getPostsBySearch({
+          search: 'none',
+          tags: post.tags.join(','),
+          groupId: post.groupId,
+        }),
+      );
     }
-  }, [post, dispatch]);
-
-  if (!post) return null;
-
-  const openPost = (_id) => history.push(`/posts/${_id}`);
+  }, [post?._id, post?.groupId, post?.tags, dispatch]);
 
   if (isLoading) {
     return (
@@ -37,6 +40,10 @@ const Post = () => {
     );
   }
 
+  if (!post) return null;
+
+  const openPost = (_id) => history.push(`/posts/${_id}`);
+
   const recommendedPosts = posts.filter(({ _id }) => _id !== post._id);
 
   return (
@@ -44,16 +51,15 @@ const Post = () => {
       <div className={classes.card}>
         <div className={classes.section}>
           <Typography variant="h3" component="h2">{post.title}</Typography>
-          <Typography gutterBottom variant="h6" color="textSecondary" component="h2">{post.tags.map((tag) => (
-            <Link to={`/tags/${tag}`} style={{ textDecoration: 'none', color: '#3f51b5' }}>
-              {` #${tag} `}
-            </Link>
-          ))}
+          <Typography gutterBottom variant="h6" color="textSecondary" component="h2">
+            {post.tags.map((tag) => (
+              <span key={tag}>{` #${tag} `}</span>
+            ))}
           </Typography>
           <Typography gutterBottom variant="body1" component="p">{post.message}</Typography>
           <Typography variant="h6">
             Created by:
-            <Link to={`/creators/${post.name}`} style={{ textDecoration: 'none', color: '#3f51b5' }}>
+            <Link to={`/profile/${post.creator}`} style={{ textDecoration: 'none', color: BRAND_DARK }}>
               {` ${post.name}`}
             </Link>
           </Typography>

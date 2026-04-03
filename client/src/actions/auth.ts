@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { AUTH } from '../constants/actionTypes';
 import * as api from '../api/index';
 import { SigninFormData, SignupFormData, Router } from '../types';
-import { postAuthRedirect } from '../utils/postAuthRedirect';
+import postAuthRedirect from '../utils/postAuthRedirect';
 
 export const signin = (
   formData: SigninFormData,

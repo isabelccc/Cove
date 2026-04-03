@@ -44,12 +44,19 @@ export interface Post {
   createdAt: Date | string;
 }
 
+export interface GroupMember {
+  id: string;
+  name: string;
+  role: 'Owner' | 'Member';
+}
+
 export interface Group {
   _id: string;
   name: string;
   ownerId: string;
   inviteToken: string;
   memberIds: string[];
+  members?: GroupMember[];
   createdAt: Date | string;
 }
 
@@ -171,6 +178,8 @@ export type FormProps = {
   currentId: string | null;
   setCurrentId: (id: string | null) => void;
   groupId: string | null;
+  /** Shown inside a modal — tighter chrome */
+  variant?: 'page' | 'dialog';
 };
 
 // Component Props

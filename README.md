@@ -1,398 +1,354 @@
-# 🎨 MERN Memories - Social Media Platform
+# 🎨 Cove — Private circles for photos & moments
 
-> A modern, full-stack social media application built with the MERN stack that enables users to create, share, and interact with memories through a beautiful, responsive interface.
+> A full-stack app for invite-only **circles**: share posts and photos with people you trust. React + Express API, **PostgreSQL** via **Prisma**, JWT and Google sign-in.
 
-[![MERN Stack](https://img.shields.io/badge/Stack-MERN-green.svg)](https://www.mongodb.com/mern-stack)
+[![Stack](https://img.shields.io/badge/Stack-React%20%2B%20Express-blue.svg)](https://reactjs.org/)
 [![React](https://img.shields.io/badge/React-17.0-blue.svg)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.6-brightgreen.svg)](https://www.mongodb.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-336791.svg)](https://www.prisma.io/)
 
 ---
 
-## ✨ What Makes This Project Unique
+## ✨ What makes this project unique
 
-### 🛡️ Advanced Content Moderation
-- **Dual Profanity Filtering System**: Implements both `bad-words` and `mint-filter` libraries for comprehensive content filtering
-- **Real-time Content Sanitization**: Automatically cleans titles, messages, and comments before storage
-- **Customizable Blacklist**: Easy-to-extend word filtering system for community safety
+### Circles (invite-only groups)
 
-### 🔐 Robust Authentication & Security
-- **Dual Authentication Methods**: JWT-based authentication + Google OAuth integration
-- **Password Security**: bcryptjs hashing with salt rounds
-- **API Rate Limiting**: Express rate limiting (100 requests per 15 minutes) to prevent abuse
-- **Large File Support**: Handles image uploads up to 30MB with optimized processing
+- **Groups with invite tokens**: create a circle, share a join link, scoped **group walls** for posts
+- **Landing + Circles UX**: marketing `Landing` section components; authenticated **Circles** list, **Group wall**, and **Join** flow
 
-### 🎯 Advanced Features
-- **Gravatar Integration**: Automatic avatar generation from email addresses
-- **Comment Management**: Full CRUD operations on comments with ownership verification
-- **Smart Search**: Multi-criteria search by title, tags, or creator name
-- **Tag-based Organization**: Categorize and filter memories using custom tags
-- **Pagination**: Efficient memory browsing with server-side pagination (8 posts per page)
-- **Creator Profiles**: Dedicated user profile pages showcasing their memories
+### Content moderation & safety
 
-### 🏗️ Modern Architecture
-- **Redux State Management**: Centralized state with Redux Thunk for async operations
-- **RESTful API Design**: Clean, well-structured Express.js backend
-- **Component-based UI**: Modular React components with Material-UI design system
-- **ES6+ Modules**: Modern JavaScript with ES modules throughout
+- **Dual profanity filtering**: `bad-words` and `mint-filter` on titles, messages, and comments
+- **Rate limiting**: Express rate limit with optional **Redis** store for shared limits across instances
+- **Large uploads**: JSON/body limit **30MB** for rich image payloads
+
+### Authentication & security
+
+- **JWT** sessions plus **Google OAuth** (ID token verification on the server)
+- **bcryptjs** for password hashing
+- **Helmet** and structured error handling on the API; **Sentry** and **Prometheus**-style **/metrics** in production-oriented setups
+
+### Product features
+
+- **Posts**: CRUD, likes, comments, tags, search, pagination, creator profiles
+- **Gravatar** avatars from email
+- **Redux + Redux Thunk** on the client; **Material-UI v4** and mixed **JS/TS** components
+
+### Architecture
+
+- **Prisma ORM** with **PostgreSQL** (schema + migrations in `server/prisma`)
+- **TypeScript** server (`tsx` in dev, `tsc` build); REST JSON API
+- **Modular React** UI (including `Landing/*`, `Circles/*`, `Form`, `Posts`, etc.)
 
 ---
 
-## 🚀 Tech Stack
+## 🚀 Tech stack
 
 ### Frontend
+
 | Technology | Version | Purpose |
-|-----------|---------|---------|
-| **React** | 17.0.2 | UI library for building interactive interfaces |
-| **Redux** | 4.2.1 | Predictable state container for JavaScript apps |
-| **Redux Thunk** | 2.4.2 | Middleware for async Redux actions |
-| **Material-UI** | 4.12.4 | React component library following Material Design |
-| **React Router** | 6.20.1 | Declarative routing for React applications |
-| **Axios** | 1.6.2 | Promise-based HTTP client for API requests |
-| **JWT Decode** | 4.0.0 | Decode JSON Web Tokens in the browser |
-| **Gravatar** | 1.8.2 | Generate user avatars from email addresses |
-| **Moment.js** | 2.30.1 | Parse, validate, manipulate, and display dates |
-| **React Google Login** | 5.2.2 | Google OAuth 2.0 authentication component |
+|------------|---------|---------|
+| **React** | 17.0.x | UI |
+| **Redux** / **Redux Thunk** | 4.x / 2.x | State & async actions |
+| **Material-UI** | 4.12.x | Components |
+| **React Router** | 5.3.x | Routing (`Switch` / `Route`) |
+| **Axios** | 1.6.x | HTTP client |
+| **TypeScript** | 5.x | Partial typing (`.tsx` / `.ts` components) |
 
 ### Backend
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| **Node.js** | 18+ | JavaScript runtime environment |
-| **Express.js** | 4.18.2 | Fast, unopinionated web framework |
-| **MongoDB** | 7.6.3 | NoSQL database for flexible data storage |
-| **Mongoose** | 7.6.3 | MongoDB object modeling for Node.js |
-| **JWT** | 9.0.2 | JSON Web Token for secure authentication |
-| **bcryptjs** | 2.4.3 | Password hashing library |
-| **Express Rate Limit** | 7.1.5 | Basic rate-limiting middleware |
-| **bad-words** | 3.0.4 | Profanity filter library |
-| **mint-filter** | 4.0.3 | Advanced text filtering library |
-| **CORS** | 2.8.5 | Cross-Origin Resource Sharing middleware |
 
-### Development Tools
-- **Concurrently**: Run multiple commands concurrently
-- **Nodemon**: Auto-restart server during development
-- **Jest**: JavaScript testing framework
-- **ESLint**: Code linting and quality assurance
+| Technology | Purpose |
+|------------|---------|
+| **Node.js** 18+ | Runtime |
+| **Express** 4.x | HTTP API |
+| **Prisma** | ORM & migrations (PostgreSQL) |
+| **PostgreSQL** | Primary database |
+| **JWT** / **google-auth-library** | Auth |
+| **bcryptjs** | Password hashing |
+| **express-rate-limit** + **rate-limit-redis** + **ioredis** | Rate limiting (Redis optional) |
+| **bad-words** / **mint-filter** | Text filtering |
+| **helmet** | Security headers |
+| **@sentry/node** | Error reporting (when configured) |
+| **prom-client** | **GET /metrics** |
+
+### Development
+
+- **concurrently** — client + server in `npm run dev`
+- **tsx** — TypeScript server in development
+- **Jest** — server tests
+- **ESLint** — client lint (CRA)
 
 ---
 
 ## 📋 Features
 
-### User Authentication
-- ✅ User registration with email/password
-- ✅ Secure login with JWT tokens
-- ✅ Google OAuth 2.0 integration
-- ✅ Protected routes and API endpoints
-- ✅ Session persistence with localStorage
+### Authentication
 
-### Memory Management
-- ✅ Create, read, update, and delete memories
-- ✅ Rich text posts with image uploads
-- ✅ Tag-based categorization
-- ✅ Image upload support (up to 30MB)
-- ✅ Base64 image encoding for storage
+- Email/password signup and sign-in (JWT)
+- Google sign-in
+- Protected API routes and client flows
 
-### Social Interactions
-- ✅ Like/unlike posts (toggle functionality)
-- ✅ Comment on posts with real-time updates
-- ✅ Edit and delete own comments
-- ✅ View user profiles and their memories
-- ✅ Search memories by creator
+### Circles
 
-### Discovery & Navigation
-- ✅ Advanced search by title, tags, or creator
-- ✅ Filter posts by specific tags
-- ✅ Pagination (8 posts per page)
-- ✅ Sort posts by creation date (newest first)
-- ✅ Responsive design for all devices
+- Create groups, list **my circles**, fetch a group by id
+- Join via **invite token** (`/join/:inviteToken`)
+- Posts can be scoped to a **group** (`groupId`)
 
-### Content Safety
-- ✅ Automatic profanity filtering (dual system)
-- ✅ Content sanitization on create/update
-- ✅ Customizable word blacklist
-- ✅ API rate limiting protection
+### Posts & social
+
+- CRUD posts, image field (base64), tags
+- Like / unlike
+- Comments (add, edit, delete) with ownership checks
+- Search, creator filter, pagination
+- User profiles
+
+### Marketing & navigation
+
+- **Landing page** at `/` (composed from `client/src/components/Landing/*`)
+- Main app routes under `/posts`, `/circles`, `/auth`, etc.
+
+### Operations
+
+- **GET /health** — health check
+- **GET /metrics** — Prometheus metrics (when enabled)
 
 ---
 
-## 🛠️ Installation & Setup
+## 🛠️ Installation & setup
 
 ### Prerequisites
-- **Node.js** v14 or higher (v18+ recommended)
-- **npm** or **yarn** package manager
-- **MongoDB** (local installation or MongoDB Atlas account)
 
-### Step 1: Clone the Repository
+- **Node.js** 18+ recommended
+- **npm**
+- **PostgreSQL** (local or hosted, e.g. Supabase, Railway, Neon)
+- **Redis** (optional; recommended in production for shared rate limits)
+
+### 1. Clone
+
 ```bash
 git clone <repository-url>
 cd mern-memories
 ```
 
-### Step 2: Install Dependencies
-Install all dependencies for root, server, and client:
+### 2. Install dependencies
+
 ```bash
 npm run install-all
 ```
 
-Or install manually:
+This installs root, server, and client (client uses `--legacy-peer-deps` for peer compatibility).
+
+Manual alternative:
+
 ```bash
-npm install                    # Root dependencies
-cd server && npm install       # Backend dependencies
-cd ../client && npm install    # Frontend dependencies
+npm install
+cd server && npm install
+cd ../client && npm install --legacy-peer-deps
 ```
 
-### Step 3: Environment Configuration
-Create a `.env` file in the `server` directory:
-```env
-# MongoDB Connection
-# Local: mongodb://localhost:27017/memories
-# Atlas: mongodb+srv://username:password@cluster.mongodb.net/memories
-MONGODB_URI=mongodb://localhost:27017/memories
+### 3. Database & Prisma
 
-# JWT Secret (generate a strong random string)
-JWT_SECRET=your_super_secret_jwt_key_min_32_characters
+1. Create a PostgreSQL database.
+2. Copy `server/env.example` to `server/.env` and set **`DATABASE_URL`** (see `env.example` for formats).
+3. From `server/`:
 
-# Google OAuth (optional - for Google sign-in)
-# Get from: https://console.cloud.google.com/
-GOOGLE_CLIENT_ID=your_google_client_id_here
-
-# Server Port (optional - defaults to 5000)
-PORT=5000
+```bash
+npx prisma migrate dev    # apply migrations
+# optional:
+npm run prisma:seed
 ```
 
-### Step 4: Start Development Servers
-Run both frontend and backend concurrently:
+### 4. Environment variables (`server/.env`)
+
+Key variables (see **`server/env.example`** for full list):
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET` | Strong secret for signing JWTs |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (same idea as client if using Google login) |
+| `PORT` | API port (server defaults to **5001** if unset) |
+| `REDIS_URL` | Optional; enables Redis-backed rate limiting |
+
+### 5. Client API URL
+
+The CRA **proxy** in `client/package.json` points at **`http://localhost:5001`**. Change it if your API runs on another port.
+
+### 6. Run in development
+
+From the repo root:
+
 ```bash
 npm run dev
 ```
 
-This starts:
-- **Backend Server**: `http://localhost:5000`
-- **Frontend Dev Server**: `http://localhost:3000`
+- **API**: `http://localhost:5001` (or your `PORT`)
+- **React**: `http://localhost:3000`
 
-Or run separately:
+Separate terminals:
+
 ```bash
-npm run server    # Backend only (port 5000)
-npm run client    # Frontend only (port 3000)
+npm run server
+npm run client
 ```
 
----
+### Production build (client)
 
-## 📜 Available Scripts
+```bash
+npm run build
+```
 
-### Root Level
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start both client and server in development mode |
-| `npm run server` | Start only the backend server |
-| `npm run client` | Start only the frontend development server |
-| `npm run build` | Build the React app for production |
-| `npm run test` | Run server-side tests with Jest |
-| `npm run install-all` | Install all dependencies (root, server, client) |
-
-### Client Scripts
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start React development server |
-| `npm run build` | Create production build |
-| `npm test` | Run React component tests |
-
-### Server Scripts
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start Express server with nodemon |
-| `npm test` | Run Jest tests in watch mode |
+Output: `client/build`. Serve statically and point the client at your deployed API base URL.
 
 ---
 
-## 🌐 API Endpoints
+## 📜 Scripts
 
-### Authentication Routes (`/user`)
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| `POST` | `/user/signup` | Register a new user | ❌ |
-| `POST` | `/user/signin` | Login existing user | ❌ |
-| `POST` | `/user/google` | Google OAuth authentication | ❌ |
+### Root
 
-### Post Routes (`/posts`)
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| `GET` | `/posts` | Get paginated posts | ❌ |
-| `GET` | `/posts/search` | Search posts by query/tags | ❌ |
-| `GET` | `/posts/creator` | Get posts by creator name | ❌ |
-| `GET` | `/posts/:id` | Get single post by ID | ❌ |
-| `POST` | `/posts` | Create a new post | ✅ |
-| `PATCH` | `/posts/:id` | Update a post | ✅ |
-| `DELETE` | `/posts/:id` | Delete a post | ✅ |
-| `PATCH` | `/posts/:id/likePost` | Like/unlike a post | ✅ |
-| `POST` | `/posts/:id/commentPost` | Add comment to post | ✅ |
-| `PATCH` | `/posts/:id/:commentId/editComment` | Edit a comment | ✅ |
-| `DELETE` | `/posts/:id/:commentId/deleteComment` | Delete a comment | ✅ |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | API + React dev servers |
+| `npm run server` | API only |
+| `npm run client` | React only |
+| `npm run build` | Production build of the client |
+| `npm run test` | Server Jest tests |
+| `npm run install-all` | Install all workspaces |
 
-**Note**: All authenticated routes require a valid JWT token in the `Authorization` header.
+### Server (`server/`)
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | `tsx watch index.ts` |
+| `npm run build` | `tsc` → `dist/` |
+| `npm start` | Run compiled `dist/index.js` |
+| `npm run prisma:migrate` | Prisma migrate dev |
+| `npm run prisma:studio` | Prisma Studio |
+| `npm run prisma:seed` | Seed script |
+
+### Client (`client/`)
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | CRA dev server |
+| `npm run build` | Production bundle |
+| `npm test` | CRA tests |
 
 ---
 
-## 📁 Project Structure
+## 🌐 API overview
+
+Unless noted, routes expect **`Authorization: Bearer <jwt>`** for protected handlers.
+
+### User (`/user`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/user/signup` | Register |
+| `POST` | `/user/signin` | Login |
+| `POST` | `/user/google` | Google token login |
+
+### Groups (`/groups`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/groups` | Create group |
+| `GET` | `/groups/mine` | List my groups |
+| `GET` | `/groups/:id` | Get group |
+| `POST` | `/groups/join` | Join with invite token |
+
+### Posts (`/posts`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/posts` | Paginated posts (auth) |
+| `GET` | `/posts/search` | Search (auth) |
+| `GET` | `/posts/creator` | By creator (auth) |
+| `GET` | `/posts/:id` | Single post (auth) |
+| `POST` | `/posts` | Create |
+| `PATCH` | `/posts/:id` | Update |
+| `DELETE` | `/posts/:id` | Delete |
+| `PATCH` | `/posts/:id/likePost` | Like / unlike |
+| `POST` | `/posts/:id/commentPost` | Add comment |
+| `PATCH` | `/posts/:id/comment/:commentId` | Edit comment |
+| `DELETE` | `/posts/:id/comment/:commentId` | Delete comment |
+
+### Other
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check |
+| `GET` | `/metrics` | Metrics |
+
+---
+
+## 📁 Project structure (high level)
 
 ```
 mern-memories/
-├── client/                      # React Frontend Application
-│   ├── public/                  # Static assets
-│   │   ├── index.html          # HTML template
-│   │   ├── _redirects          # Netlify redirects config
-│   │   └── memories.png        # App icon
+├── client/                 # React app (CRA)
 │   └── src/
-│       ├── actions/             # Redux action creators
-│       │   ├── auth.js         # Authentication actions
-│       │   └── posts.js        # Post-related actions
-│       ├── api/                # API configuration
-│       │   └── index.js        # Axios setup & interceptors
-│       ├── components/         # React components
-│       │   ├── Auth/           # Authentication UI
-│       │   ├── CreatorOrTag/   # Filtered post views
-│       │   ├── Form/           # Post creation/editing
-│       │   ├── Home/           # Main feed page
-│       │   ├── Navbar/         # Navigation bar
-│       │   ├── Pagination.jsx  # Pagination component
-│       │   ├── PostDetails/   # Single post view
-│       │   ├── Posts/          # Post list components
-│       │   └── Profile/       # User profile page
-│       ├── constants/          # Application constants
-│       │   └── actionTypes.js  # Redux action type definitions
-│       ├── images/             # Static images
-│       ├── reducers/           # Redux reducers
-│       │   ├── auth.js        # Auth state management
-│       │   ├── index.js       # Root reducer
-│       │   └── posts.js       # Posts state management
-│       ├── utils/              # Utility functions
-│       │   └── gravatar.js    # Gravatar URL generator
-│       ├── App.js             # Main App component
-│       ├── index.js           # React entry point
-│       └── index.css          # Global styles
-│
-├── server/                     # Node.js Backend API
-│   ├── controllers/            # Route controllers (business logic)
-│   │   ├── posts.js           # Post CRUD operations
-│   │   └── user.js            # User authentication logic
-│   ├── middleware/            # Custom Express middleware
-│   │   └── auth.js            # JWT authentication middleware
-│   ├── models/                # MongoDB schemas
-│   │   ├── postMessage.js     # Post model with comments
-│   │   └── user.js            # User model
-│   ├── routes/                # API route definitions
-│   │   ├── posts.js           # Post endpoints
-│   │   └── user.js            # User endpoints
-│   ├── test/                  # Test files
-│   │   ├── posts.test.js      # Post controller tests
-│   │   └── user.test.js       # User controller tests
-│   ├── index.js               # Express server entry point
-│   ├── env.example            # Environment variables template
-│   └── package.json           # Backend dependencies
-│
-├── package.json                # Root package.json with scripts
-├── setup.sh                   # Unix/Linux setup script
-├── setup.bat                  # Windows setup script
-└── README.md                  # This file
+│       ├── actions/        # Redux actions
+│       ├── api/            # Axios instance
+│       ├── components/     # UI (Landing/, Circles/, Auth/, …)
+│       ├── reducers/
+│       └── App.js
+├── server/                 # Express API (TypeScript)
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   ├── controllers/
+│   ├── routes/
+│   ├── middleware/
+│   ├── config/             # e.g. Redis
+│   ├── utils/
+│   ├── index.ts
+│   └── env.example
+├── package.json            # Root scripts
+└── README.md
 ```
 
 ---
 
-## 🚢 Deployment
+## 🚢 Deployment notes
 
-### Frontend Deployment (React)
-The React app can be deployed to static hosting platforms:
-
-**Netlify** (Recommended)
-1. Build the app: `npm run build`
-2. Deploy the `client/build` folder
-3. Configure redirects in `client/public/_redirects`
-
-**Vercel**
-```bash
-cd client
-vercel --prod
-```
-
-**Other Options**: GitHub Pages, AWS S3, Firebase Hosting
-
-### Backend Deployment (Node.js)
-Deploy the Express server to platforms supporting Node.js:
-
-**Render** (Recommended)
-1. Connect your GitHub repository
-2. Set environment variables
-3. Deploy automatically on push
-
-**Railway**
-```bash
-railway up
-```
-
-**Other Options**: Heroku, DigitalOcean, AWS EC2, Google Cloud Run
-
-### Environment Variables for Production
-Ensure all environment variables are set in your hosting platform:
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `GOOGLE_CLIENT_ID` (if using Google OAuth)
-- `PORT` (usually auto-set by platform)
-
-### CORS Configuration
-Update the frontend API base URL in `client/src/api/index.js` to point to your production backend URL.
+- Run **`npm run build`** in `server/` and start with **`npm start`**, or run **`tsx`/node** with migrations applied (`prisma migrate deploy` in production).
+- Set **`DATABASE_URL`**, **`JWT_SECRET`**, and **`REDIS_URL`** (production) on the host.
+- Deploy the **`client/build`** folder to static hosting; configure the client to call your public API URL (proxy only applies in dev).
 
 ---
 
 ## 🧪 Testing
 
-Run the test suite:
 ```bash
 npm run test
 ```
 
-The server includes Jest tests for:
-- User authentication
-- Post CRUD operations
-- API endpoint validation
+Runs server Jest tests from `server/`.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+1. Fork the repository  
+2. Create a branch: `git checkout -b feature/your-feature`  
+3. Commit and push  
+4. Open a pull request  
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
-
-### Development Guidelines
-- Follow existing code style and patterns
-- Add tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submitting
+Please keep changes focused, match existing patterns, and run tests / client build where relevant.
 
 ---
 
 ## 📝 License
 
-This project is licensed under the **ISC License**.
+**ISC** — see repository metadata.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Material-UI team for the excellent component library
-- MongoDB for the flexible database solution
-- React team for the powerful UI framework
-- All open-source contributors whose packages made this project possible
+Material-UI, Prisma, PostgreSQL, React, and the open-source packages this project depends on.
 
 ---
 
-## 📞 Support
-
-For issues, questions, or contributions, please open an issue on the GitHub repository.
-
----
-
-**Built with ❤️ using the MERN Stack**
+**Built with the MERN spirit — today backed by PostgreSQL, Prisma, and TypeScript on the API.**

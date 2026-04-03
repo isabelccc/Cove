@@ -91,6 +91,7 @@ const postsReducer = (state: PostsState = initialState, action: PostsAction): Po
         posts: state.posts.map((post: Post) =>
           (post._id === action.payload?._id ? (action.payload as Post) : post),
         ),
+        post: state.post?._id === (action.payload as Post)?._id ? (action.payload as Post) : state.post,
       };
     case DELETE:
       return {

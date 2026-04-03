@@ -1,7 +1,7 @@
 {
-  "name": "mern-memories-project",
+  "name": "cove",
   "version": "1.0.0",
-  "description": "A MERN stack memories application with authentication, CRUD operations, and real-time features",
+  "description": "Cove — private circles for photos and moments, with authentication and real-time features",
   "main": "index.js",
   "scripts": {
     "start": "cd server && npm run dev",
@@ -18,7 +18,7 @@
     "nodejs",
     "express",
     "mongodb",
-    "memories",
+    "cove",
     "social-media"
   ],
   "author": "",

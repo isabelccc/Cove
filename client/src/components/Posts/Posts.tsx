@@ -22,9 +22,9 @@ const Posts: React.FC<PostsProps> = ({ setCurrentId }) => {
     isLoading ? (
       <CircularProgress />
     ) : (
-      <div className={classes.masonry}>
+      <div className={classes.list}>
         {posts.map((post: PostType) => (
-          <div key={post._id} className={classes.masonryItem}>
+          <div key={post._id} className={classes.listItem}>
             <Post post={post} setCurrentId={setCurrentId} />
           </div>
         ))}
