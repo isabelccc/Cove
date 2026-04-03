@@ -5,15 +5,22 @@ const useLandingTopBarStyles = makeStyles((theme) => ({
     position: 'sticky',
     top: 0,
     zIndex: 1100,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: theme.spacing(1.5, 3),
+    padding: theme.spacing(1.5, 0),
     backgroundColor: alpha('#000', 0.85),
     backdropFilter: 'blur(12px)',
     borderBottom: `1px solid ${alpha('#fff', 0.08)}`,
+  },
+  topBarContain: {
+    width: '100%',
+  },
+  topBarInner: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    boxSizing: 'border-box',
+    padding: theme.spacing(0, 3),
     [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(1.5, 2),
+      padding: theme.spacing(0, 2),
     },
   },
   brand: {

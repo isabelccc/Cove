@@ -10,7 +10,7 @@ const useLandingHeroStyles = makeStyles((theme) => ({
     scrollSnapAlign: 'start',
     padding: theme.spacing(6, 3, 8),
     [theme.breakpoints.up('md')]: {
-      padding: theme.spacing(8, 5, 10),
+      padding: theme.spacing(8, 3, 10),
     },
     '& > .MuiContainer-root': {
       width: '100%',
@@ -113,7 +113,6 @@ const useLandingHeroStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('md')]: {
       marginTop: 0,
       justifyContent: 'flex-start',
-      marginLeft: theme.spacing(-1),
     },
   },
   heroVisual: {
@@ -134,7 +133,7 @@ const useLandingHeroStyles = makeStyles((theme) => ({
     paddingBottom: theme.spacing(4),
     paddingLeft: theme.spacing(2),
     [theme.breakpoints.up('md')]: {
-      width: 'min(440px, 52vw)',
+      width: 'min(100%, 520px)',
       paddingBottom: theme.spacing(7),
       paddingLeft: 0,
     },
