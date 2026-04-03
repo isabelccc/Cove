@@ -20,11 +20,7 @@ const LandingFooter: React.FC = () => {
             <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">
               Unsplash
             </a>{' '}
-            (license for use). This page is a layout homage to modern creator dashboards and is not
-            affiliated with{' '}
-            <a href="https://www.creatorland.com/" target="_blank" rel="noopener noreferrer">
-              Creatorland
-            </a>
+            (license for use). 
             . Branding and product are Cove.
           </Typography>
         </div>
